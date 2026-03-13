@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Database files
+*.db
+
+# Environment variables
+.env
+.venv/
+
+# Instance folder
+instance/
+
+# Python artifacts
+*.egg-info/
+*.egg
