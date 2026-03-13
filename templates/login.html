@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dev Agent · Connexion</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b0f;--bg2:#0c1016;--bg3:#111820;
+  --border:#1c2530;--border2:#243040;
+  --text:#c8d4e0;--text2:#728898;--text3:#3d5060;
+  --cyan:#3dd8c8;--red:#e86060;
+  --mono:'JetBrains Mono',monospace;--ui:'Sora',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:var(--ui);-webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center}
+
+.card{
+  width:360px;max-width:94vw;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:16px;padding:36px 32px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  animation:pop .3s ease;
+}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.logo-hex{width:38px;height:38px;
+  background:linear-gradient(135deg,#3dd8c8,#22b8a8);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{display:flex;flex-direction:column;gap:2px}
+.logo-name{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--cyan)}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+
+h1{font-size:16px;font-weight:600;margin-bottom:4px}
+.sub{font-size:12px;color:var(--text3);margin-bottom:24px}
+
+label{display:block;font-size:11px;color:var(--text3);margin-bottom:6px;
+  letter-spacing:.04em;text-transform:uppercase}
+
+input[type=password]{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:8px;padding:10px 14px;color:var(--text);
+  font-family:var(--mono);font-size:13px;outline:none;
+  transition:border-color .15s;margin-bottom:16px;
+}
+input[type=password]:focus{border-color:var(--cyan)}
+input[type=password]::placeholder{color:var(--text3)}
+
+button{
+  width:100%;padding:11px;background:var(--cyan);border:none;
+  border-radius:8px;color:#080b0f;font-family:var(--ui);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
+}
+button:hover{background:#56ede0;transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(61,216,200,.3)}
+button:active{transform:none}
+
+.error{
+  background:rgba(232,96,96,.08);border:1px solid rgba(232,96,96,.25);
+  border-radius:8px;padding:10px 14px;color:var(--red);
+  font-size:12px;margin-bottom:16px;
+}
+
+.hint{font-size:10px;color:var(--text3);text-align:center;margin-top:16px}
+.hint code{font-family:var(--mono);color:var(--text2);
+  background:var(--bg3);padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-hex">⬡</div>
+    <div class="logo-text">
+      <div class="logo-name">Dev Agent</div>
+      <div class="logo-sub">Lucas46 Tech Studio</div>
+    </div>
+  </div>
+
+  <h1>Connexion</h1>
+  <p class="sub">Accès protégé — entre ton mot de passe</p>
+
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <label for="password">Mot de passe</label>
+    <input type="password" id="password" name="password"
+      placeholder="••••••••" autofocus autocomplete="current-password">
+    <button type="submit">Entrer</button>
+  </form>
+
+  <p class="hint">Mot de passe par défaut : <code>devagent</code><br>
+    Change via <code>APP_PASSWORD</code> sur Render</p>
+</div>
+</body>
+</html>
