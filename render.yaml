@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: nemotron
+    env: python
+    branch: main
+    pythonVersion: 3.11.9       # Force Python 3.11.9
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app
+    autoDeploy: true            # Déploie automatiquement à chaque push sur main
+    plan: free                  # Version gratuite de Render
