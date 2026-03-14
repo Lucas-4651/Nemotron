@@ -1,17 +1,22 @@
 import subprocess
+import shlex
 import tempfile
 import os
 import json
 from pathlib import Path
 from typing import Dict, Any
 
+
 class CodeTools:
     def __init__(self, workspace: str):
         self.workspace = Path(workspace).resolve()
 
+    # ------------------------------------------------------------------
+    # run_python
+    # ------------------------------------------------------------------
     def run_python(self, args: Dict[str, Any]) -> str:
         """Exécute du code Python."""
-        code = args.get('code', '')
+        code    = args.get('code', '')
         timeout = int(args.get('timeout', 15))
         if not code:
             return "Erreur: 'code' requis."
@@ -19,13 +24,14 @@ class CodeTools:
             f.write(code)
             tmp = f.name
         try:
-            r = subprocess.run(['python3', tmp], cwd=self.workspace,
-                               capture_output=True, text=True, timeout=timeout)
+            r = subprocess.run(
+                ['python3', tmp],
+                cwd=self.workspace,
+                capture_output=True, text=True, timeout=timeout,
+            )
             out = []
-            if r.stdout:
-                out.append(f"STDOUT:\n{r.stdout.strip()}")
-            if r.stderr:
-                out.append(f"STDERR:\n{r.stderr.strip()}")
+            if r.stdout: out.append(f"STDOUT:\n{r.stdout.strip()}")
+            if r.stderr: out.append(f"STDERR:\n{r.stderr.strip()}")
             out.append(f"Code: {r.returncode}")
             return "\n".join(out)
         except subprocess.TimeoutExpired:
@@ -36,21 +42,25 @@ class CodeTools:
             return f"Erreur: {e}"
         finally:
             os.unlink(tmp)
+
     run_python.schema = {
         'description': "Exécute du code Python 3 et retourne stdout + stderr.",
         'parameters': {
             'type': 'object',
             'properties': {
-                'code': {'type': 'string', 'description': 'Code Python complet'},
-                'timeout': {'type': 'integer', 'description': 'Timeout secondes (défaut 15)'}
+                'code':    {'type': 'string', 'description': 'Code Python complet'},
+                'timeout': {'type': 'integer', 'description': 'Timeout secondes (défaut 15)'},
             },
-            'required': ['code']
-        }
+            'required': ['code'],
+        },
     }
 
+    # ------------------------------------------------------------------
+    # run_node
+    # ------------------------------------------------------------------
     def run_node(self, args: Dict[str, Any]) -> str:
         """Exécute du code JavaScript avec Node.js."""
-        code = args.get('code', '')
+        code    = args.get('code', '')
         timeout = int(args.get('timeout', 15))
         if not code:
             return "Erreur: 'code' requis."
@@ -58,13 +68,14 @@ class CodeTools:
             f.write(code)
             tmp = f.name
         try:
-            r = subprocess.run(['node', tmp], cwd=self.workspace,
-                               capture_output=True, text=True, timeout=timeout)
+            r = subprocess.run(
+                ['node', tmp],
+                cwd=self.workspace,
+                capture_output=True, text=True, timeout=timeout,
+            )
             out = []
-            if r.stdout:
-                out.append(f"STDOUT:\n{r.stdout.strip()}")
-            if r.stderr:
-                out.append(f"STDERR:\n{r.stderr.strip()}")
+            if r.stdout: out.append(f"STDOUT:\n{r.stdout.strip()}")
+            if r.stderr: out.append(f"STDERR:\n{r.stderr.strip()}")
             out.append(f"Code: {r.returncode}")
             return "\n".join(out)
         except subprocess.TimeoutExpired:
@@ -75,22 +86,26 @@ class CodeTools:
             return f"Erreur: {e}"
         finally:
             os.unlink(tmp)
+
     run_node.schema = {
         'description': "Exécute du code JavaScript avec Node.js et retourne stdout + stderr.",
         'parameters': {
             'type': 'object',
             'properties': {
-                'code': {'type': 'string', 'description': 'Code JS complet'},
-                'timeout': {'type': 'integer', 'description': 'Timeout secondes (défaut 15)'}
+                'code':    {'type': 'string', 'description': 'Code JS complet'},
+                'timeout': {'type': 'integer', 'description': 'Timeout secondes (défaut 15)'},
             },
-            'required': ['code']
-        }
+            'required': ['code'],
+        },
     }
 
+    # ------------------------------------------------------------------
+    # run_linter
+    # ------------------------------------------------------------------
     def run_linter(self, args: Dict[str, Any]) -> str:
         """Exécute un linter (pylint, eslint) sur un fichier ou dossier."""
-        path = args.get('path', '.')
-        lang = args.get('lang', 'python')
+        path      = args.get('path', '.')
+        lang      = args.get('lang', 'python')
         full_path = self.workspace / path
         if not full_path.exists():
             return f"Chemin introuvable: {path}"
@@ -101,8 +116,8 @@ class CodeTools:
         else:
             return f"Langage non supporté: {lang}"
         try:
-            r = subprocess.run(cmd, cwd=self.workspace,
-                               capture_output=True, text=True, timeout=30)
+            r   = subprocess.run(cmd, cwd=self.workspace,
+                                 capture_output=True, text=True, timeout=30)
             out = r.stdout + r.stderr
             return out if out else "Aucun problème détecté."
         except subprocess.TimeoutExpired:
@@ -111,22 +126,26 @@ class CodeTools:
             return f"Linter {cmd[0]} non installé."
         except Exception as e:
             return f"Erreur: {e}"
+
     run_linter.schema = {
         'description': "Exécute un linter (pylint, eslint) sur un fichier ou dossier.",
         'parameters': {
             'type': 'object',
             'properties': {
                 'path': {'type': 'string', 'description': 'Chemin relatif (défaut: .)'},
-                'lang': {'type': 'string', 'description': 'python ou javascript (défaut python)'}
+                'lang': {'type': 'string', 'description': 'python ou javascript (défaut python)'},
             },
-            'required': []
-        }
+            'required': [],
+        },
     }
 
+    # ------------------------------------------------------------------
+    # run_tests
+    # ------------------------------------------------------------------
     def run_tests(self, args: Dict[str, Any]) -> str:
         """Exécute les tests (pytest, jest)."""
         framework = args.get('framework', 'pytest')
-        path = args.get('path', 'tests')
+        path      = args.get('path', 'tests')
         full_path = self.workspace / path
         if not full_path.exists():
             return f"Chemin introuvable: {path}"
@@ -146,42 +165,66 @@ class CodeTools:
             return f"Framework {cmd[0]} non installé."
         except Exception as e:
             return f"Erreur: {e}"
+
     run_tests.schema = {
         'description': "Exécute les tests (pytest, jest).",
         'parameters': {
             'type': 'object',
             'properties': {
                 'framework': {'type': 'string', 'description': 'pytest ou jest (défaut pytest)'},
-                'path': {'type': 'string', 'description': 'Chemin vers les tests (défaut tests)'}
+                'path':      {'type': 'string', 'description': 'Chemin vers les tests (défaut tests)'},
             },
-            'required': []
-        }
+            'required': [],
+        },
     }
 
+    # ------------------------------------------------------------------
+    # build_project
+    # ------------------------------------------------------------------
     def build_project(self, args: Dict[str, Any]) -> str:
         """Lance une commande de build (ex: npm run build, make)."""
         cmd = args.get('command', '')
         if not cmd:
             return "Commande manquante."
+        # BUG-03 FIX : shell=True permettait l'injection de commandes shell
+        # (ex: 'npm run build; rm -rf ./') car la chaîne était passée
+        # directement au shell. On parse la commande avec shlex pour obtenir
+        # une liste d'arguments et on utilise shell=False.
         try:
-            r = subprocess.run(cmd, shell=True, cwd=self.workspace,
-                               capture_output=True, text=True, timeout=120)
+            parts = shlex.split(cmd)
+        except ValueError as e:
+            return f"Erreur parsing de la commande: {e}"
+        if not parts:
+            return "Commande vide après parsing."
+        try:
+            r = subprocess.run(
+                parts,
+                shell=False,            # ← plus d'injection shell possible
+                cwd=self.workspace,
+                capture_output=True, text=True, timeout=120,
+            )
             return r.stdout + r.stderr
         except subprocess.TimeoutExpired:
             return "Timeout du build."
+        except FileNotFoundError:
+            return f"Commande '{parts[0]}' introuvable."
         except Exception as e:
             return f"Erreur: {e}"
+
     build_project.schema = {
         'description': "Lance une commande de build (ex: npm run build, make).",
         'parameters': {
             'type': 'object',
             'properties': {
-                'command': {'type': 'string', 'description': 'Commande shell à exécuter'}
+                'command': {'type': 'string', 'description': 'Commande à exécuter'},
             },
-            'required': ['command']
-        }
+            'required': ['command'],
+        },
     }
 
+    # ------------------------------------------------------------------
+    # get_dependencies
+    # ------------------------------------------------------------------
     def get_dependencies(self, args: Dict[str, Any]) -> str:
         """Lit les dépendances depuis package.json ou requirements.txt."""
         type_ = args.get('type', 'auto')
@@ -196,7 +239,7 @@ class CodeTools:
             try:
                 with open(self.workspace / 'package.json', 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                deps = data.get('dependencies', {})
+                deps    = data.get('dependencies', {})
                 devDeps = data.get('devDependencies', {})
                 return f"Dépendances: {len(deps)} prod, {len(devDeps)} dev"
             except Exception as e:
@@ -208,15 +251,15 @@ class CodeTools:
                 return f"Dépendances: {len(lines)} paquets"
             except Exception as e:
                 return f"Erreur lecture requirements.txt: {e}"
-        else:
-            return "Type inconnu."
+        return "Type inconnu."
+
     get_dependencies.schema = {
         'description': "Lit les dépendances depuis package.json ou requirements.txt.",
         'parameters': {
             'type': 'object',
             'properties': {
-                'type': {'type': 'string', 'description': 'npm, pip, ou auto (défaut auto)'}
+                'type': {'type': 'string', 'description': 'npm, pip, ou auto (défaut auto)'},
             },
-            'required': []
-        }
+            'required': [],
+        },
     }

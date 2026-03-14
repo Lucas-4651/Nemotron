@@ -2,17 +2,24 @@ import subprocess
 import shlex
 from typing import Dict, Any, Set
 
+
 class CommandTools:
+    # BUG-16 FIX : 'rm' a été retiré de la whitelist.
+    # L'IA pouvait exécuter rm -rf ./ dans le workspace via execute_command,
+    # de façon irréversible et sans confirmation. La suppression de fichiers
+    # doit passer par delete_path (FileTools) qui valide le chemin workspace.
     ALLOWED_COMMANDS = {
-        'ls','cat','grep','find','head','tail','wc','echo','mkdir','rm','cp','mv',
-        'chmod','date','pwd','whoami','ps','df','du','uname','uptime','sort','uniq',
-        'cut','tr','sed','awk','diff','stat','file','md5sum','sha256sum',
-        'zip','unzip','tar','python3','pip','node','npm','curl','wget',
-        'ping','netstat','ss','git',
+        'ls', 'cat', 'grep', 'find', 'head', 'tail', 'wc', 'echo',
+        'mkdir', 'cp', 'mv', 'chmod', 'date', 'pwd', 'whoami',
+        'ps', 'df', 'du', 'uname', 'uptime', 'sort', 'uniq',
+        'cut', 'tr', 'sed', 'awk', 'diff', 'stat', 'file',
+        'md5sum', 'sha256sum', 'zip', 'unzip', 'tar',
+        'python3', 'pip', 'node', 'npm', 'curl', 'wget',
+        'ping', 'netstat', 'ss', 'git',
     }
 
     def __init__(self, workspace: str, allowed_commands: Set[str] = None):
-        self.workspace = workspace
+        self.workspace        = workspace
         self.allowed_commands = allowed_commands or self.ALLOWED_COMMANDS
 
     def execute_command(self, args: Dict[str, Any]) -> str:
@@ -24,32 +31,36 @@ class CommandTools:
             parts = shlex.split(command)
         except ValueError as e:
             return f"Erreur parsing: {e}"
-        base = parts[0] if parts else ""
+        base = parts[0] if parts else ''
         if base not in self.allowed_commands:
-            return f"Commande non autorisée: '{base}'. Autorisées: {sorted(self.allowed_commands)}"
+            return (
+                f"Commande non autorisée: '{base}'. "
+                f"Autorisées: {sorted(self.allowed_commands)}"
+            )
         try:
-            r = subprocess.run(parts, shell=False, cwd=self.workspace,
-                               capture_output=True, text=True, timeout=30)
+            r = subprocess.run(
+                parts, shell=False, cwd=self.workspace,
+                capture_output=True, text=True, timeout=30,
+            )
             lines = []
-            if r.stdout.strip():
-                lines.append(f"STDOUT:\n{r.stdout.strip()}")
-            if r.stderr.strip():
-                lines.append(f"STDERR:\n{r.stderr.strip()}")
+            if r.stdout.strip(): lines.append(f"STDOUT:\n{r.stdout.strip()}")
+            if r.stderr.strip(): lines.append(f"STDERR:\n{r.stderr.strip()}")
             lines.append(f"Code: {r.returncode}")
             return "\n".join(lines)
         except subprocess.TimeoutExpired:
-            return f"Timeout (30s)."
+            return "Timeout (30s)."
         except FileNotFoundError:
             return f"Commande '{base}' introuvable."
         except Exception as e:
             return f"Erreur: {e}"
+
     execute_command.schema = {
         'description': "Exécute une commande shell sécurisée (whitelist).",
         'parameters': {
             'type': 'object',
             'properties': {
-                'command': {'type': 'string'}
+                'command': {'type': 'string'},
             },
-            'required': ['command']
-        }
+            'required': ['command'],
+        },
     }
