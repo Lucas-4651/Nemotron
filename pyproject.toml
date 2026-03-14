@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "nemotron"
+version = "0.1.0"
+description = "Ton projet IA/Flask"
+authors = ["Lucas46 <ton.email@example.com>"]
+# Licence si tu veux
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "2.3.3"
+flask-limiter = "3.5.0"
+flask-sqlalchemy = "3.0.5"
+werkzeug = "2.3.7"
+requests = "2.31.0"
+chromadb = ">=0.5.0"
+tiktoken = "0.7.0"
+python-dotenv = "1.0.0"
+watchdog = "3.0.0"
+
+[tool.poetry.dev-dependencies]
+# si tu as besoin d'outils dev, tests, lint, etc.
