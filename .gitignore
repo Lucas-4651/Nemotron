@@ -1,17 +1,40 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.pyc
-
-# Database files
-*.db
-
-# Environment variables
-.env
-.venv/
-
-# Instance folder
-instance/
-
-# Python artifacts
+*.pyo
+*.pyd
+.Python
 *.egg-info/
-*.egg
+dist/
+build/
+
+# Environnement
+.venv/
+venv/
+env/
+
+# Variables sensibles
+.env
+
+# Base de données
+*.db
+*.sqlite3
+chroma_db/
+
+# Logs
+logs/
+*.log
+
+# Workspaces (contenu utilisateur)
+workspaces/*/
+
+# Render / deploy
+.render/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
